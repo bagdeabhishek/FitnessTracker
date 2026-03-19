@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Settings, Volume2, VolumeX, Trash2, Download, Moon, Weight } from 'lucide-react'
+import { Volume2, VolumeX, Trash2, Download, Moon, Weight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { db } from '@/lib/db'
 import type { AppSettings } from '@/types'
 

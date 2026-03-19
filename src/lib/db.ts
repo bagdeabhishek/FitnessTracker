@@ -47,7 +47,7 @@ export class WorkoutDatabase extends Dexie {
   }
 
   async createSession(session: Omit<WorkoutSession, 'id'>): Promise<number> {
-    return await this.sessions.add(session as WorkoutSession)
+    return (await this.sessions.add(session as WorkoutSession)) as number
   }
 
   async updateSession(id: number, updates: Partial<WorkoutSession>): Promise<void> {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Play, Pause, RotateCcw, CheckCircle2, ExternalLink, Plus, Minus, Trash2, Save } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { RestTimer } from './RestTimer'
 import { db } from '@/lib/db'
-import { formatDuration, calculateVolumeKg, calculateVolumeLbs, convertWeight } from '@/lib/helpers'
+import { formatDuration, calculateVolumeKg, calculateVolumeLbs } from '@/lib/helpers'
 import type { WorkoutDay, WorkoutSession, ExerciseLog, CompletedSet, AppSettings } from '@/types'
 
 interface ActiveWorkoutProps {

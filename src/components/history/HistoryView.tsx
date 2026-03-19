@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { History, ChevronRight, Calendar, Clock, Dumbbell, TrendingUp, Trash2, RotateCcw } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { History, ChevronRight, Calendar, Clock, Dumbbell, TrendingUp, Trash2 } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { db } from '@/lib/db'
-import { formatDate, formatDateFull, formatDuration, calculateVolumeKg, calculateVolumeLbs, getWorkoutDuration } from '@/lib/helpers'
+import { formatDate, formatDuration, calculateVolumeKg, calculateVolumeLbs, getWorkoutDuration } from '@/lib/helpers'
 import type { WorkoutSession, AppSettings, View } from '@/types'
 
 interface HistoryViewProps {

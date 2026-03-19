@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Dumbbell, Calendar, Clock, ChevronRight, ExternalLink, Play, RotateCcw, Download } from 'lucide-react'
+import { Dumbbell, Calendar, Clock, Play, RotateCcw, Download } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
