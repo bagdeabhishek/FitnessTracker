@@ -25,12 +25,12 @@ export function Header() {
       <div className="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2 min-w-0">
           <img
-            src="/brand/reppilot-lockup-horizontal-on-light.png"
+            src="/brand/reppilot-lockup-horizontal-transparent-darktext.png"
             alt="RepPilot"
             className="h-9 w-auto dark:hidden"
           />
           <img
-            src="/brand/reppilot-lockup-horizontal-on-dark.png"
+            src="/brand/reppilot-lockup-horizontal-transparent-lighttext.png"
             alt="RepPilot"
             className="h-9 w-auto hidden dark:block"
           />
