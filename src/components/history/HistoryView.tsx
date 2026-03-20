@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { db } from '@/lib/db'
 import { formatDate, formatDuration, calculateVolumeKg, calculateVolumeLbs, getWorkoutDuration } from '@/lib/helpers'
-import type { WorkoutSession, AppSettings, View } from '@/types'
+import type { WorkoutSession, AppSettings } from '@/types'
 
 interface HistoryViewProps {
   onViewSession: (session: WorkoutSession) => void
@@ -36,12 +36,6 @@ export function HistoryView({ onViewSession }: HistoryViewProps) {
     
     setSessions(filtered)
     setLoading(false)
-  }
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this workout?')) return
-    await db.sessions.delete(id)
-    loadData()
   }
 
   const clearAllHistory = async () => {

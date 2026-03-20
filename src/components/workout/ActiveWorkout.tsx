@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Play, Pause, RotateCcw, CheckCircle2, ExternalLink, Plus, Minus, Trash2, Save } from 'lucide-react'
+import { ExternalLink, Plus, Minus, Trash2, Save } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -222,7 +222,7 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
       <div className="space-y-4">
         {exercises.map((exercise, exerciseIndex) => {
           const workoutExercise = workout.exercises[exerciseIndex]
-          const completedCount = exercise.sets.filter(s => s.completed).length
+          const _completedCount = exercise.sets.filter(s => s.completed).length
           
           return (
             <Card key={exercise.exercise_id} className="overflow-hidden">
