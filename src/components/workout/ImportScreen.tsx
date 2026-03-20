@@ -8,23 +8,7 @@ import { validateWorkoutPlan, type ValidationResult } from '@/lib/validation'
 import { db } from '@/lib/db'
 import { cn } from '@/lib/utils'
 
-const aiPromptTemplate = `Create my workout plan JSON.
-
-Follow instructions at:
-https://fitness.abhishekdoesstuff.com/format/prompt
-
-Output requirements:
-- JSON only (no markdown)
-- Must parse successfully
-
-Details:
-- Goal: [FAT LOSS | HYPERTROPHY | STRENGTH | GENERAL FITNESS]
-- Experience level: [BEGINNER | INTERMEDIATE | ADVANCED]
-- Days per week: [NUMBER]
-- Available equipment: [HOME DUMBBELLS | FULL GYM | BODYWEIGHT | CUSTOM]
-- Session duration minutes: [NUMBER]
-- Injuries or limitations: [NONE OR DETAILS]
-- Biweekly variation needed: [TRUE | FALSE]`
+const aiPromptTemplate = `Generate a workout plan that strictly follows https://fitness.abhishekdoesstuff.com/format/prompt and return only valid JSON.`
 
 interface ImportScreenProps {
   onImportSuccess: () => void

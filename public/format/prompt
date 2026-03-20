@@ -1,0 +1,50 @@
+WORKOUT_TRACKER_FORMAT_VERSION=1.0
+
+OUTPUT_RULES:
+1) Output exactly one JSON object.
+2) No markdown, no code fences, no extra text.
+3) Must be valid parseable JSON.
+4) Do not include properties outside schema.
+
+TOP_LEVEL_SCHEMA:
+{
+  "version": "1.0",
+  "program_name": "string",
+  "description": "string (optional)",
+  "workouts": [WorkoutDay]
+}
+
+WORKOUT_DAY_SCHEMA:
+{
+  "day_of_week": "Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
+  "week_offset": "integer >= 0 (optional)",
+  "name": "string",
+  "exercises": [Exercise]
+}
+
+EXERCISE_SCHEMA:
+{
+  "id": "lowercase-kebab-case string",
+  "name": "string",
+  "muscle_group": "string (optional)",
+  "sets": "integer >= 1",
+  "target_reps": "string, e.g. 5 or 8-12",
+  "starting_weight_kg": "number >= 0 (optional)",
+  "starting_reps": "integer >= 1 (optional)",
+  "rest_seconds": "integer >= 1 (optional)",
+  "reference_url": "valid URL string (optional)",
+  "notes": "string (optional)"
+}
+
+SCHEDULING_RULES:
+- Weekly plans should omit week_offset.
+- Alternating plans can use week_offset values, e.g. 0 and 1.
+
+QUALITY_RULES:
+- Use realistic exercises, sets, reps, and rest times.
+- Include 3-6 exercises per workout day unless user asks otherwise.
+- Exercise ids should be unique within the plan.
+
+REFERENCE_FILES:
+- https://fitness.abhishekdoesstuff.com/format/schema.json
+- https://fitness.abhishekdoesstuff.com/format/example.json

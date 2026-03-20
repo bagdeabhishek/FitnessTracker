@@ -11,7 +11,8 @@ export default defineConfig({
       manifest: false,
       injectRegister: 'script',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,md,txt}'],
+        navigateFallbackDenylist: [/^\/format\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
