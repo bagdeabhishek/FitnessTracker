@@ -8,7 +8,7 @@ import { validateWorkoutPlan, type ValidationResult } from '@/lib/validation'
 import { db } from '@/lib/db'
 import { cn } from '@/lib/utils'
 
-const aiPromptTemplate = `Generate a workout plan that strictly follows https://fitness.abhishekdoesstuff.com/format/prompt and return only valid JSON.`
+const aiPromptTemplate = `Generate a workout plan that strictly follows https://fitness.abhishekdoesstuff.com/format/prompt.md and return only valid JSON.`
 
 interface ImportScreenProps {
   onImportSuccess: () => void
