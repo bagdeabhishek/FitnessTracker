@@ -72,16 +72,21 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
       target_reps: ex.target_reps,
       sets: Array.from({ length: ex.sets }, (_, i) => {
         const previousExercise = latestExerciseLogs.get(ex.id)
-        const previousSet = previousExercise?.sets[i] || previousExercise?.sets[previousExercise.sets.length - 1]
+        const previousSet = previousExercise?.sets[i]
+        const latestLoggedSet = previousExercise?.sets
+          .filter(set => set.weight_kg > 0 || set.weight_lbs > 0)
+          .slice(-1)[0]
         const fallbackWeightKg = ex.starting_weight_kg || 0
-        const exerciseWeightKg = previousExercise?.sets.find(set => set.weight_kg > 0)?.weight_kg || fallbackWeightKg
-        const exerciseWeightLbs = previousExercise?.sets.find(set => set.weight_lbs > 0)?.weight_lbs || kgToLbs(exerciseWeightKg)
-        const reps = previousSet?.reps || ex.starting_reps || parseDefaultReps(ex.target_reps)
+        const baselineWeightKg = latestLoggedSet?.weight_kg || fallbackWeightKg
+        const baselineWeightLbs = latestLoggedSet?.weight_lbs || kgToLbs(baselineWeightKg)
+        const weightKg = baselineWeightKg
+        const weightLbs = baselineWeightLbs
+        const reps = previousSet?.reps || latestLoggedSet?.reps || ex.starting_reps || parseDefaultReps(ex.target_reps)
 
         return {
           set_number: i + 1,
-          weight_kg: exerciseWeightKg,
-          weight_lbs: exerciseWeightLbs,
+          weight_kg: weightKg,
+          weight_lbs: weightLbs,
           reps,
           completed: false,
           timestamp: new Date()
@@ -104,20 +109,14 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
     })
   }
 
-  const handleWeightChange = (exerciseIndex: number, value: string, unit: 'kg' | 'lbs') => {
+  const handleWeightChange = (exerciseIndex: number, setIndex: number, value: string, unit: 'kg' | 'lbs') => {
     const numValue = parseFloat(value) || 0
     const kgValue = unit === 'kg' ? numValue : Math.round(numValue / 2.20462)
     const lbsValue = unit === 'lbs' ? numValue : Math.round(numValue * 2.20462)
 
-    setExercises(prev => {
-      const newExercises = [...prev]
-      newExercises[exerciseIndex].sets = newExercises[exerciseIndex].sets.map(set => ({
-        ...set,
-        weight_kg: kgValue,
-        weight_lbs: lbsValue,
-        timestamp: new Date()
-      }))
-      return newExercises
+    updateSet(exerciseIndex, setIndex, {
+      weight_kg: kgValue,
+      weight_lbs: lbsValue
     })
   }
 
@@ -197,11 +196,11 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
     })
   }
 
-  const adjustWeight = (exerciseIndex: number, delta: number) => {
-    const currentSet = exercises[exerciseIndex].sets[0]
-    const currentWeight = settings?.weight_unit === 'lbs' ? currentSet?.weight_lbs || 0 : currentSet?.weight_kg || 0
+  const adjustWeight = (exerciseIndex: number, setIndex: number, delta: number) => {
+    const set = exercises[exerciseIndex].sets[setIndex]
+    const currentWeight = settings?.weight_unit === 'lbs' ? set.weight_lbs : set.weight_kg
     const newWeight = Math.max(0, currentWeight + delta)
-    handleWeightChange(exerciseIndex, newWeight.toString(), settings?.weight_unit || 'kg')
+    handleWeightChange(exerciseIndex, setIndex, newWeight.toString(), settings?.weight_unit || 'kg')
   }
 
   const adjustReps = (exerciseIndex: number, setIndex: number, delta: number) => {
@@ -279,12 +278,6 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
           const workoutExercise = workout.exercises[exerciseIndex]
           const completedCount = exercise.sets.filter(set => set.completed).length
           const isExerciseComplete = completedCount === exercise.sets.length && exercise.sets.length > 0
-          const currentExerciseWeight = settings?.weight_unit === 'lbs'
-            ? exercise.sets[0]?.weight_lbs || 0
-            : exercise.sets[0]?.weight_kg || 0
-          const displayedWeight = Number.isInteger(currentExerciseWeight)
-            ? String(currentExerciseWeight)
-            : currentExerciseWeight.toFixed(1)
           return (
             <Card key={exercise.exercise_id} className="overflow-hidden">
               <CardHeader className="pb-3">
@@ -319,104 +312,98 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
               </CardHeader>
               
               <CardContent className="space-y-3">
-                <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 p-3">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">Working weight (applies to all sets)</p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-10 w-10"
-                      onClick={() => adjustWeight(exerciseIndex, settings?.weight_unit === 'lbs' ? -5 : -2.5)}
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <div className="relative flex-1">
-                      <Input
-                        type="number"
-                        step={settings?.weight_unit === 'lbs' ? '1' : '0.5'}
-                        value={currentExerciseWeight || ''}
-                        onChange={(e) => handleWeightChange(exerciseIndex, e.target.value, settings?.weight_unit || 'kg')}
-                        className="h-10 text-center"
-                        placeholder="0"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
-                        {settings?.weight_unit || 'kg'}
-                      </span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-10 w-10"
-                      onClick={() => adjustWeight(exerciseIndex, settings?.weight_unit === 'lbs' ? 5 : 2.5)}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
                 <div className="space-y-2">
                   {exercise.sets.map((set, setIndex) => (
                     <div 
                       key={setIndex}
-                      className={`flex items-center gap-2 p-3 rounded-xl transition-colors ${
+                      className={`p-3 rounded-xl transition-colors space-y-3 ${
                         set.completed 
                           ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800' 
                           : 'bg-zinc-50 dark:bg-zinc-800/50'
                       }`}
                     >
-                      <span className="w-8 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                        {set.set_number}
-                      </span>
-                      
-                      {/* Reps */}
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10"
-                          onClick={() => adjustReps(exerciseIndex, setIndex, -1)}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <Input
-                          type="number"
-                          value={set.reps || ''}
-                          onChange={(e) => handleRepsChange(exerciseIndex, setIndex, e.target.value)}
-                          className="w-16 h-10 text-center"
-                          placeholder="0"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10"
-                          onClick={() => adjustReps(exerciseIndex, setIndex, 1)}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+                          Set {set.set_number}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {setIndex >= workoutExercise.sets && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-10 w-10 text-red-500 hover:text-red-600"
+                              onClick={() => removeSet(exerciseIndex, setIndex)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Checkbox
+                            checked={set.completed}
+                            onCheckedChange={() => toggleSetComplete(exerciseIndex, setIndex)}
+                          />
+                        </div>
                       </div>
 
-                      <span className="text-xs px-2 py-1 rounded-lg bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200">
-                        @ {displayedWeight} {settings?.weight_unit || 'kg'}
-                      </span>
-                       
-                      {/* Complete checkbox */}
-                      <Checkbox
-                        checked={set.completed}
-                        onCheckedChange={() => toggleSetComplete(exerciseIndex, setIndex)}
-                        className="ml-auto"
-                      />
-                      
-                      {/* Delete set button (only for bonus sets) */}
-                      {setIndex >= workoutExercise.sets && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10 text-red-500 hover:text-red-600"
-                          onClick={() => removeSet(exerciseIndex, setIndex)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-2">
+                          <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-2">Weight ({settings?.weight_unit || 'kg'})</p>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-10 w-10"
+                              onClick={() => adjustWeight(exerciseIndex, setIndex, settings?.weight_unit === 'lbs' ? -5 : -2.5)}
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                            <Input
+                              type="number"
+                              step={settings?.weight_unit === 'lbs' ? '1' : '0.5'}
+                              value={settings?.weight_unit === 'lbs' ? set.weight_lbs || '' : set.weight_kg || ''}
+                              onChange={(e) => handleWeightChange(exerciseIndex, setIndex, e.target.value, settings?.weight_unit || 'kg')}
+                              className="h-10 text-center px-2"
+                              placeholder="0"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-10 w-10"
+                              onClick={() => adjustWeight(exerciseIndex, setIndex, settings?.weight_unit === 'lbs' ? 5 : 2.5)}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-2">
+                          <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 mb-2">Reps</p>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-10 w-10"
+                              onClick={() => adjustReps(exerciseIndex, setIndex, -1)}
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                            <Input
+                              type="number"
+                              value={set.reps || ''}
+                              onChange={(e) => handleRepsChange(exerciseIndex, setIndex, e.target.value)}
+                              className="h-10 text-center px-2"
+                              placeholder="0"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-10 w-10"
+                              onClick={() => adjustReps(exerciseIndex, setIndex, 1)}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
