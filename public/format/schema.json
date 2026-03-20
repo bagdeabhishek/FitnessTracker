@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fitness.abhishekdoesstuff.com/format/schema.json",
+  "title": "Workout Tracker Plan v1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "program_name", "workouts"],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "program_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "workouts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/workoutDay"
+      }
+    }
+  },
+  "$defs": {
+    "workoutDay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["day_of_week", "name", "exercises"],
+      "properties": {
+        "day_of_week": {
+          "type": "string",
+          "enum": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday"
+          ]
+        },
+        "week_offset": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exercises": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/exercise"
+          }
+        }
+      }
+    },
+    "exercise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "sets", "target_reps"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "muscle_group": {
+          "type": "string"
+        },
+        "sets": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "target_reps": {
+          "type": "string",
+          "minLength": 1
+        },
+        "starting_weight_kg": {
+          "type": "number",
+          "minimum": 0
+        },
+        "starting_reps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rest_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reference_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -6,11 +6,15 @@ import { ImportScreen } from './components/workout/ImportScreen'
 import { HistoryView } from './components/history/HistoryView'
 import { SessionDetail } from './components/history/SessionDetail'
 import { SettingsScreen } from './components/settings/SettingsScreen'
+import { FormatPromptPage } from './components/format/FormatPromptPage'
 import { db } from './lib/db'
 import type { View, WorkoutDay, WorkoutSession, AppSettings } from './types'
 import './index.css'
 
 function App() {
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/+$/, '') : ''
+  const isFormatPromptRoute = currentPath === '/format/prompt'
+
   const [currentView, setCurrentView] = useState<View>('today')
   const [activeWorkout, setActiveWorkout] = useState<{
     workout: WorkoutDay
@@ -142,6 +146,10 @@ function App() {
           />
         )
     }
+  }
+
+  if (isFormatPromptRoute) {
+    return <FormatPromptPage />
   }
 
   return (

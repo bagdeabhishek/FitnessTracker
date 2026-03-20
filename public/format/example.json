@@ -1,0 +1,60 @@
+{
+  "version": "1.0",
+  "program_name": "Upper Lower 4 Day",
+  "description": "Simple hypertrophy-focused split",
+  "workouts": [
+    {
+      "day_of_week": "Monday",
+      "name": "Upper A",
+      "exercises": [
+        {
+          "id": "barbell-bench-press",
+          "name": "Barbell Bench Press",
+          "muscle_group": "Chest",
+          "sets": 3,
+          "target_reps": "6-8",
+          "starting_weight_kg": 30,
+          "starting_reps": 6,
+          "rest_seconds": 120,
+          "reference_url": "https://exrx.net/WeightExercises/PectoralSternal/BBBenchPress"
+        },
+        {
+          "id": "lat-pulldown",
+          "name": "Lat Pulldown",
+          "muscle_group": "Back",
+          "sets": 3,
+          "target_reps": "8-12",
+          "starting_weight_kg": 35,
+          "starting_reps": 10,
+          "rest_seconds": 90
+        }
+      ]
+    },
+    {
+      "day_of_week": "Tuesday",
+      "name": "Lower A",
+      "exercises": [
+        {
+          "id": "barbell-squat",
+          "name": "Barbell Squat",
+          "muscle_group": "Legs",
+          "sets": 3,
+          "target_reps": "6-8",
+          "starting_weight_kg": 40,
+          "starting_reps": 6,
+          "rest_seconds": 150
+        },
+        {
+          "id": "leg-curl",
+          "name": "Leg Curl",
+          "muscle_group": "Hamstrings",
+          "sets": 3,
+          "target_reps": "10-12",
+          "starting_weight_kg": 20,
+          "starting_reps": 10,
+          "rest_seconds": 90
+        }
+      ]
+    }
+  ]
+}

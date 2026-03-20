@@ -8,46 +8,16 @@ import { validateWorkoutPlan, type ValidationResult } from '@/lib/validation'
 import { db } from '@/lib/db'
 import { cn } from '@/lib/utils'
 
-const aiPromptTemplate = `Generate a workout plan in strict JSON only (no markdown, no explanation).
+const aiPromptTemplate = `Create my workout plan JSON.
 
-Use this schema exactly:
-{
-  "version": "1.0",
-  "program_name": "string",
-  "description": "string (optional)",
-  "workouts": [
-    {
-      "day_of_week": "Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
-      "week_offset": 0,
-      "name": "string",
-      "exercises": [
-        {
-          "id": "kebab-case-string",
-          "name": "string",
-          "muscle_group": "string (optional)",
-          "sets": number,
-          "target_reps": "string like '8-12' or '5'",
-          "starting_weight_kg": number (optional),
-          "starting_reps": number (optional),
-          "rest_seconds": number (optional),
-          "reference_url": "https://... (optional)",
-          "notes": "string (optional)"
-        }
-      ]
-    }
-  ]
-}
+Follow instructions at:
+https://fitness.abhishekdoesstuff.com/format/prompt
 
-Rules:
-- Output valid parseable JSON object only.
-- For normal weekly plans, omit week_offset entirely.
-- Use week_offset only for cycling plans (for example 0 and 1 for alternating weeks).
-- Use realistic exercises, sets, reps, and rest times.
-- Include 3-6 exercises per workout day.
-- IDs must be unique lowercase kebab-case.
-- Do not include fields outside the schema.
+Output requirements:
+- JSON only (no markdown)
+- Must parse successfully
 
-User preferences:
+Details:
 - Goal: [FAT LOSS | HYPERTROPHY | STRENGTH | GENERAL FITNESS]
 - Experience level: [BEGINNER | INTERMEDIATE | ADVANCED]
 - Days per week: [NUMBER]
