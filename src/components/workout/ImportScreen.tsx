@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Upload, CheckCircle, XCircle, FileJson, AlertCircle } from 'lucide-react'
+import { Upload, CheckCircle, XCircle, FileJson, AlertCircle, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -7,6 +7,51 @@ import { Badge } from '@/components/ui/badge'
 import { validateWorkoutPlan, type ValidationResult } from '@/lib/validation'
 import { db } from '@/lib/db'
 import { cn } from '@/lib/utils'
+
+const aiPromptTemplate = `Generate a workout plan in strict JSON only (no markdown, no explanation).
+
+Use this schema exactly:
+{
+  "version": "1.0",
+  "program_name": "string",
+  "description": "string (optional)",
+  "workouts": [
+    {
+      "day_of_week": "Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday",
+      "week_offset": 0,
+      "name": "string",
+      "exercises": [
+        {
+          "id": "kebab-case-string",
+          "name": "string",
+          "muscle_group": "string (optional)",
+          "sets": number,
+          "target_reps": "string like '8-12' or '5'",
+          "rest_seconds": number (optional),
+          "reference_url": "https://... (optional)",
+          "notes": "string (optional)"
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- Output valid parseable JSON object only.
+- Use week_offset=0 by default; only use week_offset=1 for biweekly variation.
+- Use realistic exercises, sets, reps, and rest times.
+- Include 3-6 exercises per workout day.
+- IDs must be unique lowercase kebab-case.
+- Do not include fields outside the schema.
+
+User preferences:
+- Goal: [FAT LOSS | HYPERTROPHY | STRENGTH | GENERAL FITNESS]
+- Experience level: [BEGINNER | INTERMEDIATE | ADVANCED]
+- Days per week: [NUMBER]
+- Available equipment: [HOME DUMBBELLS | FULL GYM | BODYWEIGHT | CUSTOM]
+- Session duration minutes: [NUMBER]
+- Injuries or limitations: [NONE OR DETAILS]
+- Biweekly variation needed: [TRUE | FALSE]`
 
 interface ImportScreenProps {
   onImportSuccess: () => void
@@ -16,6 +61,7 @@ export function ImportScreen({ onImportSuccess }: ImportScreenProps) {
   const [jsonInput, setJsonInput] = useState('')
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [isPromptCopied, setIsPromptCopied] = useState(false)
 
   const handleValidate = () => {
     try {
@@ -150,6 +196,25 @@ export function ImportScreen({ onImportSuccess }: ImportScreenProps) {
     setValidation(null)
   }
 
+  const handleCopyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(aiPromptTemplate)
+    } catch {
+      const textarea = document.createElement('textarea')
+      textarea.value = aiPromptTemplate
+      textarea.style.position = 'fixed'
+      textarea.style.opacity = '0'
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
+
+    setIsPromptCopied(true)
+    window.setTimeout(() => setIsPromptCopied(false), 1500)
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -251,6 +316,35 @@ export function ImportScreen({ onImportSuccess }: ImportScreenProps) {
               )}
             </Button>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">AI Generator Prompt</CardTitle>
+          <CardDescription>
+            Copy this prompt, customize placeholders, generate JSON with your AI tool, then paste above.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={aiPromptTemplate}
+            readOnly
+            className="font-mono text-xs min-h-[280px]"
+          />
+          <Button onClick={handleCopyPrompt} variant="outline" className="w-full">
+            {isPromptCopied ? (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4 mr-2" />
+                Copy Prompt Template
+              </>
+            )}
+          </Button>
         </CardContent>
       </Card>
 
