@@ -74,14 +74,14 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
         const previousExercise = latestExerciseLogs.get(ex.id)
         const previousSet = previousExercise?.sets[i] || previousExercise?.sets[previousExercise.sets.length - 1]
         const fallbackWeightKg = ex.starting_weight_kg || 0
-        const weightKg = previousSet?.weight_kg || fallbackWeightKg
-        const weightLbs = previousSet?.weight_lbs || kgToLbs(weightKg)
+        const exerciseWeightKg = previousExercise?.sets.find(set => set.weight_kg > 0)?.weight_kg || fallbackWeightKg
+        const exerciseWeightLbs = previousExercise?.sets.find(set => set.weight_lbs > 0)?.weight_lbs || kgToLbs(exerciseWeightKg)
         const reps = previousSet?.reps || ex.starting_reps || parseDefaultReps(ex.target_reps)
 
         return {
           set_number: i + 1,
-          weight_kg: weightKg,
-          weight_lbs: weightLbs,
+          weight_kg: exerciseWeightKg,
+          weight_lbs: exerciseWeightLbs,
           reps,
           completed: false,
           timestamp: new Date()
@@ -104,14 +104,20 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
     })
   }
 
-  const handleWeightChange = (exerciseIndex: number, setIndex: number, value: string, unit: 'kg' | 'lbs') => {
+  const handleWeightChange = (exerciseIndex: number, value: string, unit: 'kg' | 'lbs') => {
     const numValue = parseFloat(value) || 0
     const kgValue = unit === 'kg' ? numValue : Math.round(numValue / 2.20462)
     const lbsValue = unit === 'lbs' ? numValue : Math.round(numValue * 2.20462)
-    
-    updateSet(exerciseIndex, setIndex, { 
-      weight_kg: kgValue,
-      weight_lbs: lbsValue
+
+    setExercises(prev => {
+      const newExercises = [...prev]
+      newExercises[exerciseIndex].sets = newExercises[exerciseIndex].sets.map(set => ({
+        ...set,
+        weight_kg: kgValue,
+        weight_lbs: lbsValue,
+        timestamp: new Date()
+      }))
+      return newExercises
     })
   }
 
@@ -141,7 +147,7 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
     const areAllSetsCompleted = exercises[exerciseIndex]?.sets.every(set => set.completed)
     const shouldCompleteAll = !areAllSetsCompleted
     const workoutExercise = workout.exercises[exerciseIndex]
-    const fallbackWeightKg = workoutExercise.starting_weight_kg || 0
+    const fallbackWeightKg = exercises[exerciseIndex]?.sets[0]?.weight_kg || workoutExercise.starting_weight_kg || 0
     const fallbackReps = workoutExercise.starting_reps || parseDefaultReps(workoutExercise.target_reps)
 
     setExercises(prev => {
@@ -191,11 +197,11 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
     })
   }
 
-  const adjustWeight = (exerciseIndex: number, setIndex: number, delta: number) => {
-    const set = exercises[exerciseIndex].sets[setIndex]
-    const currentWeight = settings?.weight_unit === 'lbs' ? set.weight_lbs : set.weight_kg
+  const adjustWeight = (exerciseIndex: number, delta: number) => {
+    const currentSet = exercises[exerciseIndex].sets[0]
+    const currentWeight = settings?.weight_unit === 'lbs' ? currentSet?.weight_lbs || 0 : currentSet?.weight_kg || 0
     const newWeight = Math.max(0, currentWeight + delta)
-    handleWeightChange(exerciseIndex, setIndex, newWeight.toString(), settings?.weight_unit || 'kg')
+    handleWeightChange(exerciseIndex, newWeight.toString(), settings?.weight_unit || 'kg')
   }
 
   const adjustReps = (exerciseIndex: number, setIndex: number, delta: number) => {
@@ -273,6 +279,12 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
           const workoutExercise = workout.exercises[exerciseIndex]
           const completedCount = exercise.sets.filter(set => set.completed).length
           const isExerciseComplete = completedCount === exercise.sets.length && exercise.sets.length > 0
+          const currentExerciseWeight = settings?.weight_unit === 'lbs'
+            ? exercise.sets[0]?.weight_lbs || 0
+            : exercise.sets[0]?.weight_kg || 0
+          const displayedWeight = Number.isInteger(currentExerciseWeight)
+            ? String(currentExerciseWeight)
+            : currentExerciseWeight.toFixed(1)
           return (
             <Card key={exercise.exercise_id} className="overflow-hidden">
               <CardHeader className="pb-3">
@@ -307,7 +319,41 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
               </CardHeader>
               
               <CardContent className="space-y-3">
-                {/* Sets */}
+                <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 p-3">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">Working weight (applies to all sets)</p>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10"
+                      onClick={() => adjustWeight(exerciseIndex, settings?.weight_unit === 'lbs' ? -5 : -2.5)}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <div className="relative flex-1">
+                      <Input
+                        type="number"
+                        step={settings?.weight_unit === 'lbs' ? '1' : '0.5'}
+                        value={currentExerciseWeight || ''}
+                        onChange={(e) => handleWeightChange(exerciseIndex, e.target.value, settings?.weight_unit || 'kg')}
+                        className="h-10 text-center"
+                        placeholder="0"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
+                        {settings?.weight_unit || 'kg'}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-10 w-10"
+                      onClick={() => adjustWeight(exerciseIndex, settings?.weight_unit === 'lbs' ? 5 : 2.5)}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   {exercise.sets.map((set, setIndex) => (
                     <div 
@@ -321,40 +367,6 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
                       <span className="w-8 text-sm font-medium text-zinc-500 dark:text-zinc-400">
                         {set.set_number}
                       </span>
-                      
-                      {/* Weight */}
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10"
-                          onClick={() => adjustWeight(exerciseIndex, setIndex, settings?.weight_unit === 'lbs' ? -5 : -2.5)}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            value={settings?.weight_unit === 'lbs' ? set.weight_lbs || '' : set.weight_kg || ''}
-                            onChange={(e) => handleWeightChange(exerciseIndex, setIndex, e.target.value, settings?.weight_unit || 'kg')}
-                            className="w-20 h-10 text-center"
-                            placeholder="0"
-                          />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
-                            {settings?.weight_unit || 'kg'}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-10 w-10"
-                          onClick={() => adjustWeight(exerciseIndex, setIndex, settings?.weight_unit === 'lbs' ? 5 : 2.5)}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      
-                      <span className="text-zinc-400">×</span>
                       
                       {/* Reps */}
                       <div className="flex items-center gap-1">
@@ -382,7 +394,11 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
                           <Plus className="w-4 h-4" />
                         </Button>
                       </div>
-                      
+
+                      <span className="text-xs px-2 py-1 rounded-lg bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200">
+                        @ {displayedWeight} {settings?.weight_unit || 'kg'}
+                      </span>
+                       
                       {/* Complete checkbox */}
                       <Checkbox
                         checked={set.completed}
