@@ -38,7 +38,8 @@ Use this schema exactly:
 
 Rules:
 - Output valid parseable JSON object only.
-- Use week_offset=0 by default; only use week_offset=1 for biweekly variation.
+- For normal weekly plans, omit week_offset entirely.
+- Use week_offset only for cycling plans (for example 0 and 1 for alternating weeks).
 - Use realistic exercises, sets, reps, and rest times.
 - Include 3-6 exercises per workout day.
 - IDs must be unique lowercase kebab-case.
@@ -359,7 +360,7 @@ export function ImportScreen({ onImportSuccess }: ImportScreenProps) {
             <p><Badge variant="outline" className="mr-2">Optional</Badge>description, week_offset, reference_url</p>
             <div className="mt-4 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg font-mono text-xs">
               <p className="text-zinc-500">// Simple weekly schedule</p>
-              <p>{"{ day_of_week: \"Monday\", name: \"Push\", exercises: [...] }"}</p>
+              <p>{"{ day_of_week: \"Monday\", name: \"Push\", exercises: [...] } // no week_offset"}</p>
               <p className="mt-2 text-zinc-500">// Biweekly schedule (Week 2)</p>
               <p>{"{ day_of_week: \"Monday\", week_offset: 1, name: \"Push B\", ... }"}</p>
             </div>

@@ -13,12 +13,26 @@ export function getTodaysWorkouts(plan: WorkoutPlan): WorkoutPlan['workouts'] {
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const
   const todayName = dayNames[today.getDay()]
   const weekNumber = getWeekNumber(today)
-  
+  const maxWeekOffset = plan.workouts.reduce((max, workout) => {
+    if (typeof workout.week_offset !== 'number') return max
+    return Math.max(max, workout.week_offset)
+  }, 0)
+  const hasCycleOffsets = maxWeekOffset > 0
+  const currentCycleOffset = hasCycleOffsets ? (weekNumber - 1) % (maxWeekOffset + 1) : 0
+
   return plan.workouts.filter(workout => {
     const matchesDay = workout.day_of_week === todayName
-    const offset = workout.week_offset || 0
-    const matchesWeek = ((weekNumber + offset) % 2) === 1
-    return matchesDay && matchesWeek
+    if (!matchesDay) return false
+
+    if (typeof workout.week_offset !== 'number') {
+      return true
+    }
+
+    if (!hasCycleOffsets) {
+      return true
+    }
+
+    return workout.week_offset === currentCycleOffset
   })
 }
 
