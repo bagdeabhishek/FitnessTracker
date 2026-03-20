@@ -27,6 +27,8 @@ Use this schema exactly:
           "muscle_group": "string (optional)",
           "sets": number,
           "target_reps": "string like '8-12' or '5'",
+          "starting_weight_kg": number (optional),
+          "starting_reps": number (optional),
           "rest_seconds": number (optional),
           "reference_url": "https://... (optional)",
           "notes": "string (optional)"
@@ -107,6 +109,8 @@ export function ImportScreen({ onImportSuccess }: ImportScreenProps) {
               "muscle_group": "Legs",
               "sets": 3,
               "target_reps": "8-10",
+              "starting_weight_kg": 40,
+              "starting_reps": 8,
               "rest_seconds": 180,
               "reference_url": "https://exrx.net/WeightExercises/Quadriceps/BBFullSquat",
               "notes": "Keep chest up, break parallel"
@@ -117,6 +121,8 @@ export function ImportScreen({ onImportSuccess }: ImportScreenProps) {
               "muscle_group": "Chest",
               "sets": 3,
               "target_reps": "8-10",
+              "starting_weight_kg": 30,
+              "starting_reps": 8,
               "rest_seconds": 120,
               "reference_url": "https://exrx.net/WeightExercises/PectoralSternal/BBBenchPress"
             },
@@ -126,6 +132,8 @@ export function ImportScreen({ onImportSuccess }: ImportScreenProps) {
               "muscle_group": "Back",
               "sets": 3,
               "target_reps": "8-10",
+              "starting_weight_kg": 25,
+              "starting_reps": 10,
               "rest_seconds": 120
             }
           ]
@@ -357,10 +365,12 @@ export function ImportScreen({ onImportSuccess }: ImportScreenProps) {
         <CardContent>
           <div className="text-sm space-y-2 text-zinc-600 dark:text-zinc-400">
             <p><Badge variant="secondary" className="mr-2">Required</Badge>version, program_name, workouts</p>
-            <p><Badge variant="outline" className="mr-2">Optional</Badge>description, week_offset, reference_url</p>
+            <p><Badge variant="outline" className="mr-2">Optional</Badge>description, week_offset, starting_weight_kg, starting_reps, reference_url</p>
             <div className="mt-4 p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg font-mono text-xs">
               <p className="text-zinc-500">// Simple weekly schedule</p>
               <p>{"{ day_of_week: \"Monday\", name: \"Push\", exercises: [...] } // no week_offset"}</p>
+              <p className="text-zinc-500 mt-2">// First-time defaults (used before previous logs exist)</p>
+              <p>{"{ id: \"bench-press\", sets: 3, target_reps: \"8-10\", starting_weight_kg: 30, starting_reps: 8 }"}</p>
               <p className="mt-2 text-zinc-500">// Biweekly schedule (Week 2)</p>
               <p>{"{ day_of_week: \"Monday\", week_offset: 1, name: \"Push B\", ... }"}</p>
             </div>

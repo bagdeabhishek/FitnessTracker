@@ -4,6 +4,8 @@ export interface Exercise {
   muscle_group?: string
   sets: number
   target_reps: string
+  starting_weight_kg?: number
+  starting_reps?: number
   rest_seconds?: number
   reference_url?: string
   notes?: string

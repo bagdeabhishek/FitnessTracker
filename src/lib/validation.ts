@@ -6,6 +6,8 @@ export const exerciseSchema = z.object({
   muscle_group: z.string().optional(),
   sets: z.number().int().positive(),
   target_reps: z.string().min(1),
+  starting_weight_kg: z.number().nonnegative().optional(),
+  starting_reps: z.number().int().positive().optional(),
   rest_seconds: z.number().int().positive().optional(),
   reference_url: z.string().url().optional().or(z.literal('')),
   notes: z.string().optional()

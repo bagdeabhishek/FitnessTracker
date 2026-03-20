@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ExternalLink, Plus, Minus, Trash2, Save } from 'lucide-react'
+import { ExternalLink, Plus, Minus, Trash2, Save, CheckCheck } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { RestTimer } from './RestTimer'
 import { db } from '@/lib/db'
-import { formatDuration, calculateVolumeKg, calculateVolumeLbs } from '@/lib/helpers'
+import { formatDuration, calculateVolumeKg, calculateVolumeLbs, kgToLbs } from '@/lib/helpers'
 import type { WorkoutDay, WorkoutSession, ExerciseLog, CompletedSet, AppSettings } from '@/types'
 
 interface ActiveWorkoutProps {
@@ -32,8 +32,7 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    loadSettings()
-    initializeExercises()
+    void bootstrapWorkout()
   }, [])
 
   useEffect(() => {
@@ -43,25 +42,51 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
     return () => clearInterval(interval)
   }, [startTime])
 
-  const loadSettings = async () => {
-    const s = await db.getSettings()
-    setSettings(s)
+  const parseDefaultReps = (targetReps: string): number => {
+    const match = targetReps.match(/\d+/)
+    return match ? parseInt(match[0], 10) : 0
   }
 
-  const initializeExercises = () => {
+  const bootstrapWorkout = async () => {
+    const s = await db.getSettings()
+    setSettings(s)
+
+    const recentSessions = await db.getSessions(50)
+    const latestExerciseLogs = new Map<string, ExerciseLog>()
+    for (const session of recentSessions) {
+      for (const exerciseLog of session.exercises) {
+        if (!latestExerciseLogs.has(exerciseLog.exercise_id)) {
+          latestExerciseLogs.set(exerciseLog.exercise_id, exerciseLog)
+        }
+      }
+    }
+
+    initializeExercises(latestExerciseLogs)
+  }
+
+  const initializeExercises = (latestExerciseLogs: Map<string, ExerciseLog>) => {
     const initialExercises: ExerciseLog[] = workout.exercises.map(ex => ({
       exercise_id: ex.id,
       exercise_name: ex.name,
       reference_url: ex.reference_url,
       target_reps: ex.target_reps,
-      sets: Array.from({ length: ex.sets }, (_, i) => ({
-        set_number: i + 1,
-        weight_kg: 0,
-        weight_lbs: 0,
-        reps: 0,
-        completed: false,
-        timestamp: new Date()
-      }))
+      sets: Array.from({ length: ex.sets }, (_, i) => {
+        const previousExercise = latestExerciseLogs.get(ex.id)
+        const previousSet = previousExercise?.sets[i] || previousExercise?.sets[previousExercise.sets.length - 1]
+        const fallbackWeightKg = ex.starting_weight_kg || 0
+        const weightKg = previousSet?.weight_kg || fallbackWeightKg
+        const weightLbs = previousSet?.weight_lbs || kgToLbs(weightKg)
+        const reps = previousSet?.reps || ex.starting_reps || parseDefaultReps(ex.target_reps)
+
+        return {
+          set_number: i + 1,
+          weight_kg: weightKg,
+          weight_lbs: weightLbs,
+          reps,
+          completed: false,
+          timestamp: new Date()
+        }
+      })
     }))
     setExercises(initialExercises)
   }
@@ -110,6 +135,30 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
         duration: workoutExercise.rest_seconds || settings?.default_rest_seconds || 90
       })
     }
+  }
+
+  const toggleExerciseComplete = (exerciseIndex: number) => {
+    const areAllSetsCompleted = exercises[exerciseIndex]?.sets.every(set => set.completed)
+    const shouldCompleteAll = !areAllSetsCompleted
+    const workoutExercise = workout.exercises[exerciseIndex]
+    const fallbackWeightKg = workoutExercise.starting_weight_kg || 0
+    const fallbackReps = workoutExercise.starting_reps || parseDefaultReps(workoutExercise.target_reps)
+
+    setExercises(prev => {
+      const newExercises = [...prev]
+      newExercises[exerciseIndex].sets = newExercises[exerciseIndex].sets.map(set => {
+        const weightKg = set.weight_kg || fallbackWeightKg
+        return {
+          ...set,
+          weight_kg: weightKg,
+          weight_lbs: set.weight_lbs || kgToLbs(weightKg),
+          reps: set.reps || fallbackReps,
+          completed: shouldCompleteAll,
+          timestamp: new Date()
+        }
+      })
+      return newExercises
+    })
   }
 
   const addSet = (exerciseIndex: number) => {
@@ -222,6 +271,8 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
       <div className="space-y-4">
         {exercises.map((exercise, exerciseIndex) => {
           const workoutExercise = workout.exercises[exerciseIndex]
+          const completedCount = exercise.sets.filter(set => set.completed).length
+          const isExerciseComplete = completedCount === exercise.sets.length && exercise.sets.length > 0
           return (
             <Card key={exercise.exercise_id} className="overflow-hidden">
               <CardHeader className="pb-3">
@@ -231,6 +282,9 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
                     <div className="flex items-center gap-3 mt-1">
                       <Badge variant="secondary" className="text-xs">
                         Target: {exercise.target_reps}
+                      </Badge>
+                      <Badge variant={isExerciseComplete ? 'default' : 'outline'} className="text-xs">
+                        {completedCount}/{exercise.sets.length} sets
                       </Badge>
                       {workoutExercise.muscle_group && (
                         <span className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -351,16 +405,26 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
                   ))}
                 </div>
                 
-                {/* Add set button */}
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full"
-                  onClick={() => addSet(exerciseIndex)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Set
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => addSet(exerciseIndex)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Set
+                  </Button>
+                  <Button
+                    variant={isExerciseComplete ? 'outline' : 'default'}
+                    size="sm"
+                    className="w-full"
+                    onClick={() => toggleExerciseComplete(exerciseIndex)}
+                  >
+                    <CheckCheck className="w-4 h-4 mr-2" />
+                    {isExerciseComplete ? 'Uncheck All' : 'Complete Exercise'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )
