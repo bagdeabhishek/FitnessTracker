@@ -222,8 +222,6 @@ export function ActiveWorkout({ workout, planId, planName, onComplete, onCancel 
       <div className="space-y-4">
         {exercises.map((exercise, exerciseIndex) => {
           const workoutExercise = workout.exercises[exerciseIndex]
-          const _completedCount = exercise.sets.filter(s => s.completed).length
-          
           return (
             <Card key={exercise.exercise_id} className="overflow-hidden">
               <CardHeader className="pb-3">
