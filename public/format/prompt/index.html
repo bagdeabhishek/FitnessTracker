@@ -6,75 +6,116 @@
     <title>Workout Prompt Format</title>
     <style>
       :root {
-        color-scheme: light dark;
+        color-scheme: light;
+        --bg: #fafafa;
+        --fg: #18181b;
+        --muted: #52525b;
+        --card: #ffffff;
+        --border: #e4e4e7;
+        --primary: #06b6d4;
+        --primary-text: #ffffff;
       }
+
+      .dark {
+        color-scheme: dark;
+        --bg: #18181b;
+        --fg: #f4f4f5;
+        --muted: #a1a1aa;
+        --card: #27272a;
+        --border: #3f3f46;
+        --primary: #06b6d4;
+        --primary-text: #ffffff;
+      }
+
+      * { box-sizing: border-box; }
+
       body {
         margin: 0;
         font-family: "Plus Jakarta Sans", system-ui, sans-serif;
-        background: #0b1020;
-        color: #e7edf7;
+        background: var(--bg);
+        color: var(--fg);
       }
+
       .wrap {
-        max-width: 900px;
+        max-width: 960px;
         margin: 0 auto;
         padding: 24px 16px 48px;
       }
-      .card {
-        background: #121933;
-        border: 1px solid #243056;
-        border-radius: 14px;
-        padding: 16px;
-      }
+
       h1 {
         margin: 0 0 8px;
-        font-size: 1.7rem;
+        font-size: 1.8rem;
+        line-height: 1.2;
       }
+
       p {
         margin: 0 0 16px;
-        color: #b3c1dd;
+        color: var(--muted);
       }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      }
+
       .actions {
         display: flex;
         gap: 8px;
         margin-bottom: 12px;
         flex-wrap: wrap;
       }
+
       a,
       button {
-        border: 1px solid #2f4e97;
-        background: #143274;
-        color: #e7edf7;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--fg);
         text-decoration: none;
-        border-radius: 10px;
+        border-radius: 12px;
         padding: 10px 14px;
         cursor: pointer;
         font: inherit;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
+
+      #copy {
+        border-color: transparent;
+        background: var(--primary);
+        color: var(--primary-text);
+      }
+
       pre {
         white-space: pre-wrap;
         word-break: break-word;
         margin: 0;
         padding: 14px;
-        background: #0a132b;
-        border-radius: 10px;
-        border: 1px solid #1f2f58;
+        background: var(--bg);
+        border-radius: 12px;
+        border: 1px solid var(--border);
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         font-size: 12px;
         line-height: 1.5;
         max-height: 70vh;
         overflow: auto;
+        color: var(--fg);
       }
     </style>
   </head>
   <body>
     <div class="wrap">
       <h1>Workout Prompt Format</h1>
-      <p>Use this as the canonical prompt and JSON rules for workout plan generation.</p>
+      <p>Canonical instructions and schema for AI workout generation.</p>
 
       <div class="card">
         <div class="actions">
           <button id="copy">Copy Full Prompt Guide</button>
-          <a href="/format/prompt.md" target="_blank" rel="noreferrer">Open Raw prompt.md</a>
+          <a href="/format/prompt.md" target="_blank" rel="noreferrer">Open prompt.md</a>
           <a href="/format/schema.json" target="_blank" rel="noreferrer">Open schema.json</a>
           <a href="/format/example.json" target="_blank" rel="noreferrer">Open example.json</a>
         </div>
@@ -83,6 +124,10 @@
     </div>
 
     <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+
       const content = document.getElementById('content');
       const copy = document.getElementById('copy');
       let textValue = '';
