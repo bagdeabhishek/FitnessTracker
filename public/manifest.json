@@ -1,7 +1,7 @@
 {
-  "name": "Workout Tracker",
-  "short_name": "Workouts",
-  "description": "Track your workouts offline",
+  "name": "RepPilot",
+  "short_name": "RepPilot",
+  "description": "AI workout planning and set logging, offline-first.",
   "theme_color": "#06b6d4",
   "background_color": "#fafafa",
   "display": "standalone",
@@ -10,15 +10,15 @@
   "start_url": ".",
   "icons": [
     {
-      "src": "icon-192x192.png?v=2",
+      "src": "brand/reppilot-mark-transparent-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512x512.png?v=2",
+      "src": "brand/reppilot-mark-transparent-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }

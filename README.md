@@ -52,6 +52,16 @@ npm run dev
 
 4. Open http://localhost:5173 in your browser
 
+### Optional: Google Analytics
+
+If you want analytics, create a `.env` file from `.env.example` and set:
+
+```bash
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+If this value is not set, analytics scripts are not loaded.
+
 ### Building for Production
 
 ```bash
@@ -76,11 +86,14 @@ The `dist` folder will contain the static build ready for deployment.
    - **Output Directory**: `dist`
    - **Install Command**: (leave empty)
 
-4. **Domain Configuration:**
-   - Set domain: `workout.abhishekdoesstuff.com`
-   - Enable HTTPS (Let's Encrypt)
+4. **Optional Environment Variable:**
+   - `VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX`
 
-5. **Deploy!**
+5. **Domain Configuration:**
+    - Set domain: `workout.abhishekdoesstuff.com`
+    - Enable HTTPS (Let's Encrypt)
+
+6. **Deploy!**
 
 ### Option 2: Docker Deployment (Alternative)
 

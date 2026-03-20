@@ -23,14 +23,17 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800">
       <div className="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">W</span>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-zinc-900 dark:text-white leading-tight">Workout</h1>
-            <p className="text-xs text-primary-500 font-medium">Tracker</p>
-          </div>
+        <div className="flex items-center gap-2 min-w-0">
+          <img
+            src="/brand/reppilot-lockup-horizontal-on-light.png"
+            alt="RepPilot"
+            className="h-9 w-auto dark:hidden"
+          />
+          <img
+            src="/brand/reppilot-lockup-horizontal-on-dark.png"
+            alt="RepPilot"
+            className="h-9 w-auto hidden dark:block"
+          />
         </div>
         
         <button
