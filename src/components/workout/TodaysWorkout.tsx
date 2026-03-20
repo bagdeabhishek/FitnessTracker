@@ -18,7 +18,67 @@ export function TodaysWorkout({ onStartWorkout, onNavigate }: TodaysWorkoutProps
   const [todayWorkouts, setTodayWorkouts] = useState<WorkoutDay[]>([])
   const [loading, setLoading] = useState(true)
   const [weekNumber, setWeekNumber] = useState(1)
-  const { isInstallable, promptInstall } = usePWAInstall()
+  const { isInstallable, isInstalled, isIOS, promptInstall } = usePWAInstall()
+  const showInstallCard = !isInstalled && (isInstallable || isIOS)
+
+  const renderInstallCard = (compact = false) => {
+    if (!showInstallCard) return null
+
+    if (compact) {
+      return (
+        <Card className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border-primary-200 dark:border-primary-800">
+          <CardContent className="flex flex-row items-center justify-between py-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
+                <Download className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-zinc-900 dark:text-white">Install App</h3>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                  {isInstallable ? 'Add to home screen' : 'Safari: Share > Add to Home Screen'}
+                </p>
+              </div>
+            </div>
+            {isInstallable ? (
+              <Button size="sm" onClick={promptInstall}>
+                Install
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" disabled>
+                iOS Steps
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )
+    }
+
+    return (
+      <Card className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border-primary-200 dark:border-primary-800">
+        <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+          <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center mb-3">
+            <Download className="w-6 h-6 text-white" />
+          </div>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Install App</h3>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 max-w-xs">
+            {isInstallable
+              ? 'Add Workout Tracker to your home screen for quick access'
+              : 'On iPhone: open in Safari, tap Share, then Add to Home Screen'}
+          </p>
+          {isInstallable ? (
+            <Button onClick={promptInstall} className="w-full">
+              <Download className="w-4 h-4 mr-2" />
+              Add to Home Screen
+            </Button>
+          ) : (
+            <Button variant="outline" className="w-full" disabled>
+              Safari Share Menu Required
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
 
   useEffect(() => {
     loadData()
@@ -51,23 +111,7 @@ export function TodaysWorkout({ onStartWorkout, onNavigate }: TodaysWorkoutProps
           <p className="text-zinc-600 dark:text-zinc-400 mt-1">{formatDate(new Date())}</p>
         </div>
 
-        {isInstallable && (
-          <Card className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border-primary-200 dark:border-primary-800">
-            <CardContent className="flex flex-col items-center justify-center py-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-primary-500 flex items-center justify-center mb-3">
-                <Download className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Install App</h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 max-w-xs">
-                Add Workout Tracker to your home screen for quick access
-              </p>
-              <Button onClick={promptInstall} className="w-full">
-                <Download className="w-4 h-4 mr-2" />
-                Add to Home Screen
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {renderInstallCard()}
 
         <Card className="border-dashed border-2 border-zinc-300 dark:border-zinc-600">
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -98,24 +142,7 @@ export function TodaysWorkout({ onStartWorkout, onNavigate }: TodaysWorkoutProps
           <Badge variant="secondary">Week {weekNumber % 2 === 1 ? '1' : '2'}</Badge>
         </div>
 
-        {isInstallable && (
-          <Card className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border-primary-200 dark:border-primary-800">
-            <CardContent className="flex flex-row items-center justify-between py-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
-                  <Download className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-zinc-900 dark:text-white">Install App</h3>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">Add to home screen</p>
-                </div>
-              </div>
-              <Button size="sm" onClick={promptInstall}>
-                Install
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {renderInstallCard(true)}
 
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -165,24 +192,7 @@ export function TodaysWorkout({ onStartWorkout, onNavigate }: TodaysWorkoutProps
         <Badge variant="secondary">Week {weekNumber % 2 === 1 ? '1' : '2'}</Badge>
       </div>
 
-      {isInstallable && (
-        <Card className="bg-gradient-to-r from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 border-primary-200 dark:border-primary-800">
-          <CardContent className="flex flex-row items-center justify-between py-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
-                <Download className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-zinc-900 dark:text-white">Install App</h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">Add to home screen</p>
-              </div>
-            </div>
-            <Button size="sm" onClick={promptInstall}>
-              Install
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {renderInstallCard(true)}
 
       {todayWorkouts.map((workout, index) => (
         <Card key={index} className="overflow-hidden">
